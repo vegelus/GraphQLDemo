@@ -10,7 +10,7 @@ namespace GraphQLDemo.API.Schema
             _categories = new List<CategoryType>();
         }
 
-        public bool CreateCategory(string name, string description)
+        public CategoryType CreateCategory(string name, string description)
         {
             var category = new CategoryType()
             {
@@ -19,18 +19,18 @@ namespace GraphQLDemo.API.Schema
                 Description = description
             };
             _categories.Add(category);
-            return true;
+            return category;
         }
 
-        public bool UpdateCategory(Guid id, string name, string description)
+        public CategoryType UpdateCategory(Guid id, string name, string description)
         {
             var category = _categories.FirstOrDefault(c => c.Id == id);
             if (category == null)
-                throw new Exception("Category not found");
+                throw new GraphQLException( new Error("Category not found", "CATEGORY_NOT_FOUND"));
             category.Name = name;
             category.Description = description;
 
-            return true;
+            return category;
         }
 
         public bool DeleteCategory(Guid id)
