@@ -1,4 +1,6 @@
 ﻿
+using GraphQLDemo.API.DTO;
+using GraphQLDemo.API.Services;
 using HotChocolate.Subscriptions;
 
 namespace GraphQLDemo.API.Schema
@@ -6,34 +8,51 @@ namespace GraphQLDemo.API.Schema
     public class Mutation
     {
         private List<CategoryType> _categories;
+        private readonly CategoryRepository categoryRepository;
 
-        public Mutation()
+        public Mutation(CategoryRepository categoryRepository)
         {
             _categories = new List<CategoryType>();
+            this.categoryRepository = categoryRepository;
         }
 
         public async Task<CategoryType> CreateCategory(string name, string description, [Service]ITopicEventSender topicEventSender)
         {
-            var category = new CategoryType()
+            var categoryDto = new CategoryDto()
             {
                 Id = Guid.NewGuid(),
                 Name = name,
                 Description = description
             };
-            _categories.Add(category);
+            categoryDto = await categoryRepository.Create(categoryDto);
+            var category = new CategoryType
+            {
+                Id = categoryDto.Id,
+                Description = categoryDto.Description,
+                Name = categoryDto.Name
+            };
 
             await topicEventSender.SendAsync(nameof(Subscription.CategoryCreated), category);
 
             return category;
         }
 
-        public CategoryType UpdateCategory(Guid id, string name, string description, [Service] ITopicEventSender topicEventSender)
+        public async Task<CategoryType> UpdateCategory(Guid id, string name, string description, [Service] ITopicEventSender topicEventSender)
         {
-            var category = _categories.FirstOrDefault(c => c.Id == id);
-            if (category == null)
-                throw new GraphQLException( new Error("Category not found", "CATEGORY_NOT_FOUND"));
-            category.Name = name;
-            category.Description = description;
+            var categoryDto = new CategoryDto()
+            {
+                Id = id,
+                Name = name,
+                Description = description
+            };
+            categoryDto = await categoryRepository.Update(categoryDto);
+
+            var category = new CategoryType
+            {
+                Id = categoryDto.Id,
+                Description = categoryDto.Description,
+                Name = categoryDto.Name
+            };
 
             var topicNane = $"{id}_{nameof(Subscription.CategoryUpdated)}";
             topicEventSender.SendAsync(topicNane, category);

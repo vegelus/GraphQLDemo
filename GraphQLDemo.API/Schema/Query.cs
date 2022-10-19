@@ -1,10 +1,17 @@
 ﻿
 using Bogus;
+using GraphQLDemo.API.Services;
 
 namespace GraphQLDemo.API.Schema
 {
     public class Query
     {
+        private readonly CategoryRepository categoryRepository;
+
+        public Query(CategoryRepository categoryRepository)
+        {
+            this.categoryRepository = categoryRepository;
+        }
         public List<ProductType> GetProductTypes()
         {
 
@@ -29,6 +36,19 @@ namespace GraphQLDemo.API.Schema
             return GetProductTypes();
         }
 
+        public async Task<List<CategoryType>> GetCategories()
+        {
+            var categories = await categoryRepository.GetAll();
+            return categories.Select(x => new CategoryType { Id = x.Id, Name = x.Name, Description = x.Description }).ToList();
+        }
+
+        public async Task<CategoryType?> GetCategory(Guid categoryId)
+        {
+            var category = await categoryRepository.GetById(categoryId);
+            if(category == null)
+                return null;
+            return new CategoryType { Id = category.Id, Description = category.Description, Name = category.Name };
+        }
 
         [GraphQLDeprecated("is deorecated")]
         public string Hello => "Hello OLMUG!";
