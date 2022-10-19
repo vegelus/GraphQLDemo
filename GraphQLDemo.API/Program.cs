@@ -9,7 +9,7 @@ builder.Services.AddGraphQLServer()
     .AddSubscriptionType<Subscription>();
 builder.Services.AddInMemorySubscriptions();
 var connectionString = builder.Configuration.GetConnectionString("default");
-builder.Services.AddPooledDbContextFactory<DemoDbContext>(o => o.UseSqlite(connectionString));
+builder.Services.AddPooledDbContextFactory<DemoDbContext>(o => o.UseSqlite(connectionString).LogTo(Console.WriteLine));
 
 builder.Services.AddScoped<CategoryRepository>();
 

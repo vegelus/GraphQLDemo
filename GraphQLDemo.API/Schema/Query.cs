@@ -36,6 +36,7 @@ namespace GraphQLDemo.API.Schema
             return GetProductTypes();
         }
 
+        [UseOffsetPaging(IncludeTotalCount = true, DefaultPageSize = 3)]
         public async Task<List<CategoryType>> GetCategories()
         {
             var categories = await categoryRepository.GetAll();
